@@ -1,0 +1,28 @@
+{
+  "name": "grigor/yii2-rest",
+  "description": "rest full",
+  "type": "yii2-extension",
+  "minimum-stability": "dev",
+  "keywords": [
+    "yii2",
+    "extension"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "grigor",
+      "email": "cmk.cmyk@mail.ru"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "yiisoft/yii2": "~2.0.0",
+    "yii2tech/filedb": "*"
+  },
+
+  "autoload": {
+    "psr-4": {
+      "grigor\\rest\\": "src"
+    }
+  }
+}
