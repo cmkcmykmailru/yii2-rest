@@ -5,9 +5,8 @@ namespace grigor\rest\controllers\processor;
 use yii\base\Model;
 use yii\web\Request;
 
-abstract class AbstractFormProcessor  implements FormProcessorInterface
+abstract class AbstractFormProcessor implements FormProcessorInterface
 {
-    protected $form;
 
     public function load(Model $form, &$args, Request $request): void
     {
@@ -19,8 +18,4 @@ abstract class AbstractFormProcessor  implements FormProcessorInterface
 
     abstract function loadForm(Model $form, Request $request): ?Model;
 
-    public function getForm(): ?Model
-    {
-        return $this->form;
-    }
 }

@@ -75,7 +75,7 @@ class RestController extends Controller
                 unset($params[$name]);
             } elseif (PHP_VERSION_ID >= 70100 && ($type = $param->getType()) !== null && !$type->isBuiltin()) {
                 try {
-                    $this->injectedParams($type, $name, $args, $requestedParams);
+                    $this->injectedParams($type, $name, $args, $requestedParams, $action);
                 } catch (Exception $e) {
                     throw new \RuntimeException($e->getMessage(), 0, $e);
                 }
@@ -102,7 +102,7 @@ class RestController extends Controller
         return $args;
     }
 
-    protected function injectedParams(\ReflectionType $type, $name, &$args, &$requestedParams)
+    protected function injectedParams(\ReflectionType $type, $name, &$args, &$requestedParams, $action)
     {
         $typeName = $type->getName();
         $parents = class_parents($typeName);
@@ -114,7 +114,7 @@ class RestController extends Controller
             $formProcessor = \Yii::$container->get(FormProcessorInterface::class);
             $formProcessor->load($form, $args, Yii::$app->request);
             $requestedParams[$name] = "FormProcessor: $typeName \$$name";
-            Yii::$app->requestedAction->bindProcessor($formProcessor);
+            $action->setForm($form);
             return;
         }
 
@@ -129,10 +129,9 @@ class RestController extends Controller
 
     protected function serializeData($data)
     {
-
         return Yii::createObject([
             'class' => $this->serializer,
-            'serviceFactory' => $this->action->serviseFactory
+            'serviceFactory' => $this->action->serviceFactory
         ])->serialize($data);
     }
 }

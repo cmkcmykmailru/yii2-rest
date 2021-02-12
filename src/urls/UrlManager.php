@@ -7,6 +7,7 @@ use yii\web\UrlManager as BaseUrlManager;
 class UrlManager extends BaseUrlManager
 {
     public $serviceRules;
+    public $whiteList = true;
 
     public function init()
     {
