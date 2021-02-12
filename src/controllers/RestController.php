@@ -24,7 +24,7 @@ class RestController extends Controller
 
     public function bindActionParams($action, $params)
     {
-        $serviceFactory = $params['service'];
+        $serviceFactory =\Yii::$app->serviceInstaller;
         $method = new \ReflectionMethod($action->service, $serviceFactory->getMethod());
 
         $args = [];
@@ -131,7 +131,7 @@ class RestController extends Controller
     {
         return Yii::createObject([
             'class' => $this->serializer,
-            'serviceFactory' => $this->action->serviceFactory
+            'serviceInstaller' =>  \Yii::$app->serviceInstaller
         ])->serialize($data);
     }
 }

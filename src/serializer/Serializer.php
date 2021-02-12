@@ -2,32 +2,32 @@
 
 namespace grigor\rest\serializer;
 
-use grigor\rest\urls\factory\ServiceFactory;
+use grigor\rest\urls\factory\ServiceInstaller;
 use yii\rest\Serializer as BaseSerializer;
 
 /**
  *
- * @property ServiceFactory $serviceFactory
+ * @property ServiceInstaller $serviceFactory
  */
 class Serializer extends BaseSerializer
 {
-    public $serviceFactory;
+    public $serviceInstaller;
 
     protected function serializeModel($model)
     {
-        if ($this->serviceFactory->isEmptySerializer()) {
+        if ($this->serviceInstaller->isEmptySerializer()) {
             return parent::serializeModel($model);
         }
-        $serializer = $this->serviceFactory->getSerializer();
+        $serializer = $this->serviceInstaller->getSerializer();
         return $serializer($model);
     }
 
     protected function serializeDataProvider($dataProvider)
     {
-        if ($this->serviceFactory->isEmptySerializer()) {
+        if ($this->serviceInstaller->isEmptySerializer()) {
             return parent::serializeDataProvider($dataProvider);
         }
-        $serializer = $this->serviceFactory->getSerializer();
+        $serializer = $this->serviceInstaller->getSerializer();
         return parent::serializeDataProvider(new ProxyDataProvider($dataProvider, $serializer));
     }
 }

@@ -4,9 +4,7 @@ namespace grigor\rest\controllers\action;
 
 use DomainException;
 use grigor\rest\exception\NotFoundException;
-use grigor\rest\security\PermissionFilter;
-use grigor\rest\security\Verifier;
-use grigor\rest\urls\factory\ServiceFactory;
+use grigor\rest\urls\factory\ServiceInstaller;
 use Yii;
 use yii\base\Action;
 use yii\base\Model;
@@ -18,27 +16,37 @@ class RestAction extends Action
 
     public $service;
     public $method;
-    public $serviceFactory;
     private $form;
+    private $alias;
+
+    public function __construct($id, $controller, $config = [])
+    {
+        $this->alias =  \Yii::$app->serviceInstaller->getAlias();
+        parent::__construct($id, $controller);
+    }
+
+    public function getUniqueId()
+    {
+        return $this->alias;
+    }
 
     public function runWithParams($params)
     {
-        /** @var ServiceFactory $serviceFactory */
-        $this->serviceFactory = $serviceFactory = $params['service'];
-        $alias = $params['alias'];
-        $this->service = $serviceFactory->createService();
-        $method = $serviceFactory->getMethod();
+        /** @var ServiceInstaller $serviceInstaller */
+        $serviceInstaller =  \Yii::$app->serviceInstaller;
+        $this->service = $serviceInstaller->createService();
+        $method = $serviceInstaller->getMethod();
 
         $args = $this->controller->bindActionParams($this, $params);
         if (Yii::$app->requestedParams === null) {
             Yii::$app->requestedParams = $args;
         }
-        $verifier = $serviceFactory->getVerifier();
+        $verifier = $serviceInstaller->getVerifier();
 
         if ($verifier !== null) {
             $verifier->fireForbiddenHttpExceptionIfNotPermission([
                 'arguments' => $args,
-                'route' => $alias
+                'route' => $this->alias
             ]);
         }
 
@@ -54,8 +62,8 @@ class RestAction extends Action
             throw new BadRequestHttpException($e->getMessage(), null, $e);
         }
 
-        if (!$serviceFactory->isEmptyStatusCode()) {
-            Yii::$app->getResponse()->setStatusCode($serviceFactory->getStatusCode());
+        if (!$serviceInstaller->isEmptyStatusCode()) {
+            Yii::$app->getResponse()->setStatusCode($serviceInstaller->getStatusCode());
             return empty($result) ? [] : $result;
         }
 

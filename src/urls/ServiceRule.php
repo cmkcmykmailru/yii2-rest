@@ -3,24 +3,15 @@
 namespace grigor\rest\urls;
 
 use grigor\rest\controllers\RestController;
-use grigor\rest\urls\factory\ServiceFactory;
+use grigor\rest\urls\installer\ServiceInstaller;
 use yii\web\UrlRule;
 
 class ServiceRule extends UrlRule
 {
-
     public $alias;
-    public $service;
-    public $serializer;
-    public $permissions;
     public $route = RestController::ROUTE;
     public $pattern;
-    public $response;
-
-    public function init()
-    {
-        parent::init();
-    }
+    public $identityService;
 
     public function parseRequest($manager, $request)
     {
@@ -29,14 +20,11 @@ class ServiceRule extends UrlRule
             return false;
         }
         $route[0] = RestController::ROUTE;
-        $route[1]['service'] = new ServiceFactory(
-            $this->service,
-            $this->serializer,
-            $this->response,
-            empty($this->permissions) ? [] : $this->permissions,
-            $manager->whiteList
-        );
-        $route[1]['alias'] = $this->alias;
+
+        /**@var ServiceInstaller $serviceInstaller */
+        $serviceInstaller = \Yii::$app->serviceInstaller;
+        $serviceInstaller->setAlias($this->alias);
+        $serviceInstaller->installService($this->identityService);
         return $route;
     }
 
