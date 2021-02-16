@@ -16,6 +16,6 @@ abstract class AbstractFormProcessor implements FormProcessorInterface
         }
     }
 
-    abstract function loadForm(Model $form, Request $request): ?Model;
+    abstract protected function loadForm(Model $form, Request $request): ?Model;
 
 }

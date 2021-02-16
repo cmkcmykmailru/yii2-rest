@@ -2,6 +2,7 @@
 
 namespace grigor\rest\urls\installer;
 
+use grigor\rest\controllers\action\ActionContextInterface;
 use grigor\rest\security\Verifier;
 use yii\base\BaseObject;
 use yii\helpers\ArrayHelper;
@@ -15,6 +16,8 @@ class ServiceInstaller extends BaseObject
     private $permissions;
     private $whiteList;
     private $alias;
+    private $actionContext;
+    private $strictParams;
 
     public function installService(string $identityService): void
     {
@@ -25,6 +28,44 @@ class ServiceInstaller extends BaseObject
         $this->setResponse(ArrayHelper::getValue($serviceMetaData, 'response'));
         $permissions = ArrayHelper::getValue($serviceMetaData, 'permissions');
         $this->setPermissions(empty($permissions) ? [] : $permissions);
+        $this->setActionContext(ArrayHelper::getValue($serviceMetaData, 'context'));
+    }
+
+    public function setStrictParams(?array $strictParams)
+    {
+        $this->strictParams = $strictParams;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getStrictParams(): array
+    {
+        return empty($this->strictParams)?[]:$this->strictParams;
+    }
+
+    /**
+     * @param mixed $actionContext
+     */
+    public function setActionContext($actionContext): void
+    {
+        $this->actionContext = $actionContext;
+    }
+
+
+    public function getActionContext(): ?ActionContextInterface
+    {
+        if (empty($this->actionContext)) {
+            return null;
+        }
+        if (!\Yii::$container->has($this->actionContext)) {
+            try {
+                return \Yii::createObject($this->actionContext);
+            } catch (\Exception $e) {
+                throw new \RuntimeException('The specified actionContext "' . $this->actionContext . '" does not exist', $e->getCode(), $e);
+            }
+        }
+        return \Yii::$container->get($this->actionContext);
     }
 
     public function getAlias(): string

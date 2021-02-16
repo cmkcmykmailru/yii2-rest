@@ -12,11 +12,23 @@ class ServiceRule extends UrlRule
     public $route = RestController::ROUTE;
     public $pattern;
     public $identityService;
+    public $strictParams;
+
+    public function init()
+    {
+        $this->pattern = trim($this->pattern, '/');
+        if (strpos($this->pattern, '<') !== false && preg_match_all('/<(\w+):?[^>]+?>/', $this->pattern, $matches)) {
+            foreach ($matches[1] as $name) {
+                $this->strictParams[$name] = "$name";
+            }
+        }
+        parent::init();
+    }
 
     public function parseRequest($manager, $request)
     {
         $route = parent:: parseRequest($manager, $request);
-        if (!$route) {
+        if (empty($route)) {
             return false;
         }
         $route[0] = RestController::ROUTE;
@@ -25,6 +37,7 @@ class ServiceRule extends UrlRule
         $serviceInstaller = \Yii::$app->serviceInstaller;
         $serviceInstaller->setAlias($this->alias);
         $serviceInstaller->installService($this->identityService);
+        $serviceInstaller->setStrictParams($this->strictParams);
         return $route;
     }
 

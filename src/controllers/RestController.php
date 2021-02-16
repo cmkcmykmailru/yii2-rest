@@ -16,6 +16,8 @@ class RestController extends Controller
 {
     public const ROUTE = 'rest/rest/index';
     public $serializer = Serializer::class;
+    public $missing = [];
+    public $injectMissing = [];
 
     public function createAction($id)
     {
@@ -24,14 +26,20 @@ class RestController extends Controller
 
     public function bindActionParams($action, $params)
     {
-        $serviceFactory =\Yii::$app->serviceInstaller;
-        $method = new \ReflectionMethod($action->service, $serviceFactory->getMethod());
+        $serviceInstaller = \Yii::$app->serviceInstaller;
+        $method = new \ReflectionMethod($action->service, $serviceInstaller->getMethod());
+
+        $methodParams = $method->getParameters();
+
+        $strict = $serviceInstaller->getStrictParams();
+        $params = array_filter($params, function ($key) use ($strict) {
+            return in_array($key, $strict);
+        }, ARRAY_FILTER_USE_KEY);
 
         $args = [];
-        $missing = [];
         $actionParams = [];
         $requestedParams = [];
-        foreach ($method->getParameters() as $param) {
+        foreach ($methodParams as $param) {
             $name = $param->getName();
             if (array_key_exists($name, $params)) {
                 $isValid = true;
@@ -82,14 +90,12 @@ class RestController extends Controller
             } elseif ($param->isDefaultValueAvailable()) {
                 $args[] = $actionParams[$name] = $param->getDefaultValue();
             } else {
-                $missing[] = $name;
+                if (isset($strict[$name])) {
+                    $this->missing[] = $name;
+                } else {
+                    $this->injectMissing[] = $name;
+                }
             }
-        }
-
-        if (!empty($missing)) {
-            throw new BadRequestHttpException(Yii::t('yii', 'Missing required parameters: {params}', [
-                'params' => implode(', ', $missing),
-            ]));
         }
 
         $this->actionParams = $actionParams;
@@ -123,15 +129,14 @@ class RestController extends Controller
             $requestedParams[$name] = "Unavailable service: $name";
             return;
         }
-
-        throw new Exception('Could not load required service: ' . $name);
+        $this->injectMissing[] = $name;
     }
 
     protected function serializeData($data)
     {
         return Yii::createObject([
             'class' => $this->serializer,
-            'serviceInstaller' =>  \Yii::$app->serviceInstaller
+            'serviceInstaller' => \Yii::$app->serviceInstaller
         ])->serialize($data);
     }
 }

@@ -6,7 +6,6 @@ use yii\web\UrlManager as BaseUrlManager;
 
 class UrlManager extends BaseUrlManager
 {
-    public $ruleConfig = ['class' => ServiceRule::class];
 
     public function init()
     {

@@ -15,14 +15,20 @@
     }
   ],
   "require": {
-    "php": ">=7.4",
-    "yiisoft/yii2": "~2.0.0",
-    "yii2tech/filedb": "*"
+    "php": ">=7.1",
+    "yiisoft/yii2": "~2.0.0"
   },
-
+  "require-dev": {
+    "phpunit/phpunit": "4.8.34",
+    "johnkary/phpunit-speedtrap": "^1.0"
+  },
   "autoload": {
     "psr-4": {
-      "grigor\\rest\\": "src"
+      "grigor\\rest\\": "src",
+      "grigorTest\\rest\\": "tests"
     }
+  },
+  "scripts": {
+    "tests": "php ./vendor/bin/phpunit --colors=always tests"
   }
 }
