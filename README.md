@@ -4,7 +4,7 @@ yii2-rest
 ####Работа еще ведется. 
 
 Хорошо использовать с
-[генератором конфигурации на основе аннотаций yii2-generator](https://github.com/cmkcmykmailru/scanner)
+[генератором конфигурации на основе аннотаций yii2-generator](https://github.com/cmkcmykmailru/yii2-generator)
 
 Установка
 ------------
@@ -243,6 +243,6 @@ class FindModel implements ActionContextInterface
 Эти системы разделены потому, что в большинстве случаев yii2-generator на проде не нужен, но весьма удобен
 когда система разрабатывается и его отсутствие не влияет на работоспособность приложения.
 
-Как пользоваться yii2-generator-ом почитайте на его [странице](https://github.com/cmkcmykmailru/scanner)
+Как пользоваться yii2-generator-ом почитайте на его [странице](https://github.com/cmkcmykmailru/yii2-generator)
 
 В папке example вы найдете примеры файлов. Не забывайте про namespace-ы они там удалены, наверно у вас будут какие-то свои.
