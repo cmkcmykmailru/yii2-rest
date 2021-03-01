@@ -245,4 +245,4 @@ class FindModel implements ActionContextInterface
 
 Как пользоваться yii2-generator-ом почитайте на его [странице](https://github.com/cmkcmykmailru/yii2-generator)
 
-В папке example вы найдете примеры файлов. Не забывайте про namespace-ы они там удалены, наверно у вас будут какие-то свои.
+В папке example вы найдете примеры файлов в zip-архиве. Не забывайте про namespace-ы они у вас могут быть другими.
