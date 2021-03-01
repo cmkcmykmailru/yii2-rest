@@ -1,0 +1,57 @@
+GET http://api.user.local//v1/context/demo/f957e6fb-7d31-45de-bbeb-c9fb3e69faad
+Content-Type: application/json
+Accept: application/json
+
+{
+  "value": 2222222
+}
+
+###
+
+GET http://api.user.local/v1/context/demo/2222222
+Content-Type: application/json
+Accept: application/json
+
+###
+
+GET http://api.user.local/v1/shop/phones
+Content-Type: application/json
+Accept: application/json
+
+###
+
+POST http://api.user.local/v1/shop/phones
+Content-Type: application/json
+Accept: application/json
+
+{
+  "value": "89611234567"
+}
+
+###
+
+POST http://api.user.local/v2/shop/phones
+Content-Type: application/json
+Accept: application/json
+
+{
+  "value": "89611234567"
+}
+
+###
+
+PUT http://api.user.local/v1/shop/phones/f957e6fb-7d31-45de-bbeb-c9fb3e69faad
+Content-Type: application/json
+Accept: application/json
+
+{
+  "value": "89611111112"
+}
+
+###
+
+GET http://api.user.local/v1/shop/phones/f957e6fb-7d31-45de-bbeb-c9fb3e69faad
+Content-Type: application/json
+Accept: application/json
+
+###
