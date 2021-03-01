@@ -1,10 +1,10 @@
 yii2-rest
 =====
 Работа с RESTful. Позволяет любой класс использовать в качестве action.
-Сейчас проект еще не закончен. Планируется посредством чтения аннотаций в файлах проекта
-генерировать некую конфигурацию api. 
+####Работа еще ведется. 
 
-[Scanner](https://github.com/cmkcmykmailru/scanner) - будет использоваться для сканирования файлов проекта.
+Хорошо использовать с
+[генератором конфигурации на основе аннотаций yii2-generator](https://github.com/cmkcmykmailru/scanner)
 
 Установка
 ------------
@@ -23,10 +23,36 @@ php composer.phar require --prefer-dist grigor/yii2-rest "*"
 "grigor/yii2-rest": "*",
 ```
 
-Настройка
+Настройка с учетом присутствия в системе yii2-generator
 -----
-Скопируйте папку frontend или backend в корень проекта и переименуйте как вам нравится у меня будет api. И не забудьте добавить 
-в файл common/config/bootstrap.php такую трочку Yii::setAlias('@api', dirname(dirname(__DIR__)) . '/api');
+Скопируйте папку frontend или backend в корень проекта и переименуйте как вам нравится, у меня будет api. И не забудьте добавить 
+в файл common/config/bootstrap.php такую строчку Yii::setAlias('@api', dirname(dirname(__DIR__)) . '/api');
+
+Файл common/config/params.php может быть таким:
+```php
+<?php
+return [
+    ...
+    /**
+     * Это пути где будут лежать настройки правил для рест апи и настройки методов которые будут отрабатывать в место actions.
+     *
+     * Если использовать yii2-generator, то лучше пути сразу писать без @alias или конвертировать
+     * в относительный|реальный путь. Ниже будет описано почему или см. yii2-generator 
+     * grigor\generator\tools\DeveloperTool::beforeAppRunScanDevDirectories($config);.
+     */
+    'serviceDirectoryPath' => Yii::getAlias('@api/data/static/services'),// тут будут лежать настройки методов.
+    'rulesPath' => Yii::getAlias('@api/data/static/rules.php'), // тут сами правила со ссылками на настройки выше.
+    /**
+     * Параметр говорит генератору в каких папках ведется разработка ядра для апи, в общем случае где искать php файлы 
+     * с аннотациями содержащими настройки для апи.
+     * Этот параметр использует только yii2-generator, но он использует и параметры выше.
+     */
+    'devDirectories' => [
+        Yii::getAlias('@api'),
+    ]
+    ...
+];
+```
 
 Файл api/config/main.php может быть таким:
 
@@ -46,6 +72,7 @@ return [
     'bootstrap' => [
         'log',
         grigor\rest\RestBootstrap::class,
+        grigor\generator\GeneratorBootstrap::class,
         [
             'class' => 'yii\filters\ContentNegotiator',
             'formats' => [
@@ -57,6 +84,9 @@ return [
     'modules' => [
         'rest' => [
             'class' => grigor\rest\Module::class,
+        ],
+        'generator' => [
+            'class' => grigor\generator\Module::class,
         ],
     ],
     'controllerNamespace' => 'api\controllers',
@@ -96,8 +126,8 @@ return [
         ],
         'serviceMetaDataReader' => [
             'class' => grigor\rest\urls\installer\PhpServiceMetaDataReader::class,
-            'serviceDirectoryPath' => '@api/data/static/services',
-            'rulesPath' => '@api/data/static/rules.php',
+            'serviceDirectoryPath' => $params['serviceDirectoryPath'],//берется из common/config/params.php
+            'rulesPath' => $params['rulesPath'],//берется из common/config/params.php
         ],
         'urlManager' => [
             'class' => grigor\rest\urls\UrlManager::class,
@@ -113,9 +143,10 @@ return [
     'params' => $params,
 ];
 ```
+
 Параметр
 
-'rulesPath' => '@api/data/static/rules.php', указывает на файл правил для роутов
+'rulesPath' => $params['rulesPath'], указывает на файл правил для роутов, он примерно выглядит так:
 
 ```php
 <?php
@@ -132,10 +163,9 @@ return [
 ];
 ```
 
-
 Параметр 
 
-'serviceDirectoryPath' => '@api/data/static/services', - указывает на папку где лежат настройки action (ими могут быть любые классы)
+'serviceDirectoryPath' => $params['serviceDirectoryPath'], - указывает на папку где лежат настройки action (ими могут быть любые классы)
 Настройки могут находится и в базе и файлах, зависит от реализации ServiceMetaDataReaderInterface 
 Пример настройки (одна настройка один файл) , если планируется хранить в файла то название может быть таким eca98246-8562-4edb-8d5d-07c65558d9da.php да вообще любым
 ```php
@@ -207,4 +237,12 @@ class FindModel implements ActionContextInterface
 ```
 
 Для всего этого дела удачно подходят сервисы и репозитории.
-И скоро система будет использовать аннотации в качестве заместителей файлов конфигураций, на их основе будут генерироваться настройки и записываться либо в файлы, либо в базу, это кому как нравится, в последнем случае можно легко организовать админку для всего этого дела.
+Система может использовать аннотации в качестве заместителей файлов конфигураций,
+если используется yii2-generator. На основе аннотаций генерируются настройки и правила, и записываться либо в файлы, либо в базу (реализуйте интерфейс ServiceMetaDataReaderInterface чтобы он получал настройки из базы для этого дела), 
+это кому как нравится, в последнем случае можно легко организовать админку управления своим апи.
+Эти системы разделены потому, что в большинстве случаев yii2-generator на проде не нужен, но весьма удобен
+когда система разрабатывается и его отсутствие не влияет на работоспособность приложения.
+
+Как пользоваться yii2-generator-ом почитайте на его [странице](https://github.com/cmkcmykmailru/scanner)
+
+В папке example вы найдете примеры файлов. Не забывайте про namespace-ы они там удалены, наверно у вас будут какие-то свои.
