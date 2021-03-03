@@ -1,7 +1,6 @@
 yii2-rest
 =====
 Работа с RESTful. Позволяет любой класс использовать в качестве action.
-####Работа еще ведется. 
 
 Хорошо использовать с
 [генератором конфигурации на основе аннотаций yii2-generator](https://github.com/cmkcmykmailru/yii2-generator)
@@ -14,13 +13,13 @@ yii2-rest
 Запустите команду
 
 ```
-php composer.phar require --prefer-dist grigor/yii2-rest "*"
+php composer.phar require --prefer-dist grigor/yii2-rest "dev-master"
 ```
 
 или добавьте в composer.json
 
 ```
-"grigor/yii2-rest": "*",
+"grigor/yii2-rest": "dev-master",
 ```
 
 Настройка с учетом присутствия в системе yii2-generator
