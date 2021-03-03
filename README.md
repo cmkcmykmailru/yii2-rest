@@ -213,7 +213,7 @@ class FindModel implements ActionContextInterface
 
     public function getParams($args): ?array
     {
-        $id = $args[0];
+        $id = $args['key'];
         if ($id !== '...') {
             throw new NotFoundHttpException('Page not found.');
         }
@@ -247,7 +247,8 @@ class FindModel implements ActionContextInterface
 
 В папке example вы найдете примеры файлов в zip-архиве. Не забывайте про namespace-ы они у вас могут быть другими.
 
-###Тестировать
+Тестировать
+-----
 ```shell
 composer tests
 ```
