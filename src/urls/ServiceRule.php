@@ -16,13 +16,20 @@ class ServiceRule extends UrlRule
 
     public function init()
     {
-        $this->pattern = trim($this->pattern, '/');
-        if (strpos($this->pattern, '<') !== false && preg_match_all('/<(\w+):?[^>]+?>/', $this->pattern, $matches)) {
+        $this->strictParams = self::buildStrict($this->pattern);
+        parent::init();
+    }
+
+    public static function buildStrict($pattern): array
+    {
+        $pattern = trim($pattern, '/');
+        $strictParams = [];
+        if (strpos($pattern, '<') !== false && preg_match_all('/<(\w+):?[^>]+?>/', $pattern, $matches)) {
             foreach ($matches[1] as $name) {
-                $this->strictParams[$name] = "$name";
+                $strictParams[$name] = "$name";
             }
         }
-        parent::init();
+        return $strictParams;
     }
 
     public function parseRequest($manager, $request)

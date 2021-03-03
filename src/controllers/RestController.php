@@ -21,12 +21,12 @@ class RestController extends Controller
 
     public function createAction($id)
     {
-        return new RestAction($id, $this);
+        return new RestAction($id, $this, \Yii::$app->serviceInstaller);
     }
 
     public function bindActionParams($action, $params)
     {
-        $serviceInstaller = \Yii::$app->serviceInstaller;
+        $serviceInstaller = $action->serviceInstaller;
         $method = new \ReflectionMethod($action->service, $serviceInstaller->getMethod());
 
         $methodParams = $method->getParameters();
@@ -79,7 +79,7 @@ class RestController extends Controller
                         'param' => $name,
                     ]));
                 }
-                $args[] = $actionParams[$name] = $params[$name];
+                $args[$name] = $actionParams[$name] = $params[$name];
                 unset($params[$name]);
             } elseif (PHP_VERSION_ID >= 70100 && ($type = $param->getType()) !== null && !$type->isBuiltin()) {
                 try {
@@ -88,7 +88,7 @@ class RestController extends Controller
                     throw new \RuntimeException($e->getMessage(), 0, $e);
                 }
             } elseif ($param->isDefaultValueAvailable()) {
-                $args[] = $actionParams[$name] = $param->getDefaultValue();
+                $args[$name] = $actionParams[$name] = $param->getDefaultValue();
             } else {
                 if (isset($strict[$name])) {
                     $this->missing[] = $name;
@@ -118,14 +118,14 @@ class RestController extends Controller
             /** @var Model $form */
             $form = \Yii::$container->has($typeName) ? \Yii::$container->get($typeName) : \Yii::createObject($typeName);
             $formProcessor = \Yii::$container->get(FormProcessorInterface::class);
-            $formProcessor->load($form, $args, Yii::$app->request);
+            $formProcessor->load($form, $name, $args, Yii::$app->request);
             $requestedParams[$name] = "FormProcessor: $typeName \$$name";
             $action->setForm($form);
             return;
         }
 
         if ($type->allowsNull()) {
-            $args[] = null;
+            $args[$name] = null;
             $requestedParams[$name] = "Unavailable service: $name";
             return;
         }

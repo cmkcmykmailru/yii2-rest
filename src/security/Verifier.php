@@ -9,18 +9,18 @@ class Verifier
     private $firstFilter;
     private $lastFilter;
 
-    public function append(string $permissionName): Filter
+    public function append(string $permissionName): Verifier
     {
         if (empty($this->firstFilter)) {
             $this->firstFilter = new PermissionFilter();
             $this->firstFilter->setData($permissionName);
             $this->lastFilter = $this->firstFilter;
-            return $this->lastFilter;
+            return $this;
         }
         $newPerm = new PermissionFilter();
         $newPerm->setData($permissionName);
         $this->lastFilter = $this->lastFilter->setNext($newPerm);
-        return $newPerm;
+        return $this;
     }
 
     public function can(array $data = []): bool

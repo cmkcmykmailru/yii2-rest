@@ -8,11 +8,11 @@ use yii\web\Request;
 abstract class AbstractFormProcessor implements FormProcessorInterface
 {
 
-    public function load(Model $form, &$args, Request $request): void
+    public function load(Model $form, string $name, &$args, Request $request): void
     {
         $this->form = $this->loadForm($form, $request);
         if (!empty($this->form)) {
-            $args[] = $this->form;
+            $args[$name] = $this->form;
         }
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace resttests;
+namespace resttests\controllers;
 
 use grigor\rest\controllers\processor\FormProcessor;
 use grigor\rest\controllers\processor\FormProcessorInterface;
@@ -11,22 +11,35 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 use yii\di\Container;
 use yii\helpers\ArrayHelper;
 use Yii;
+use yii\helpers\FileHelper;
 
 
-abstract class TestCase extends BaseTestCase
+abstract class PermissionTestCase extends BaseTestCase
 {
 
     protected function tearDown(): void
     {
         parent::tearDown();
         $this->destroyApplication();
+        FileHelper::removeDirectory(Yii::getAlias('@resttests/controllers/rbac'));
+    }
+
+    protected function createUser(array $roles, $id)
+    {
+        $user = new FakeIdentity($id);
+        Yii::$app->user->login($user);
+        foreach ($roles as $name){
+            $role = Yii::$app->authManager->createRole($name);
+            Yii::$app->authManager->add($role);
+            Yii::$app->authManager->assign($role, $user->getId());
+        }
     }
 
     protected function mockWebApplication($config = [], $appClass = '\yii\web\Application')
     {
         $params = [
-            'serviceDirectoryPath' => __DIR__ . '/data/services/',
-            'rulesPath' => __DIR__ . '/data/rules.php'
+            'serviceDirectoryPath' => dirname(__DIR__) . '/data/services/',
+            'rulesPath' => dirname(__DIR__) . '/data/rules.php'
         ];
 
         new $appClass(ArrayHelper::merge([
@@ -39,8 +52,16 @@ abstract class TestCase extends BaseTestCase
                         'application/json' => 'yii\web\JsonParser',
                     ],
                     'enableCsrfCookie' => false,
-                    'scriptFile' => __DIR__ . '/index.php',
+                    'scriptFile' => dirname(__DIR__) . '/index.php',
                     'scriptUrl' => '/index.php',
+                ],
+                'user' => [
+                    'identityClass' => 'resttests\controllers\FakeIdentity',
+                    'enableAutoLogin' => false,
+                    'enableSession' => false,
+                ],
+                'authManager' => [
+                    'class' => 'yii\rbac\PhpManager',
                 ],
                 'serviceMetaDataReader' => [
                     'class' => \grigor\rest\urls\installer\PhpServiceMetaDataReader::class,
@@ -62,13 +83,13 @@ abstract class TestCase extends BaseTestCase
     protected function createController()
     {
         $params = [
-            'serviceDirectoryPath' => __DIR__ . '/data/services/',
-            'rulesPath' => __DIR__ . '/data/rules.php'
+            'serviceDirectoryPath' => dirname(__DIR__) . '/data/services/',
+            'rulesPath' => dirname(__DIR__) . '/data/rules.php'
         ];
 
         $controller = new RestController(RestController::ROUTE, new \yii\web\Application([
             'id' => 'testapp',
-            'basePath' => __DIR__,
+            'basePath' => dirname(__DIR__),
 
             'components' => [
                 'request' => [
@@ -78,6 +99,14 @@ abstract class TestCase extends BaseTestCase
                     'enableCsrfCookie' => false,
                     'scriptFile' => __DIR__ . '/index.php',
                     'scriptUrl' => '/index.php',
+                ],
+                'user' => [
+                    'identityClass' => 'resttests\controllers\FakeIdentity',
+                    'enableAutoLogin' => false,
+                    'enableSession' => false,
+                ],
+                'authManager' => [
+                    'class' => 'yii\rbac\PhpManager',
                 ],
                 'serviceMetaDataReader' => [
                     'class' => \grigor\rest\urls\installer\PhpServiceMetaDataReader::class,

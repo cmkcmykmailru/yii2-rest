@@ -17,13 +17,16 @@ class RestAction extends Action
 
     public $service;
     public $method;
+    public $serviceInstaller;
     private $form;
     private $alias;
 
-    public function __construct($id, $controller, $config = [])
+    public function __construct($id, $controller, ServiceInstaller $serviceInstaller, $config = [])
     {
-        $this->alias = \Yii::$app->serviceInstaller->getAlias();
-        parent::__construct($id, $controller);
+        $this->serviceInstaller = $serviceInstaller;
+        $this->alias = $this->serviceInstaller->getAlias();
+        $this->service = $serviceInstaller->createService();
+        parent::__construct($id, $controller, $config);
     }
 
     public function getUniqueId()
@@ -34,14 +37,11 @@ class RestAction extends Action
     public function runWithParams($params)
     {
         /** @var ServiceInstaller $serviceInstaller */
-        $serviceInstaller = \Yii::$app->serviceInstaller;
-        $this->service = $serviceInstaller->createService();
+        $serviceInstaller = $this->serviceInstaller;
+
         $method = $serviceInstaller->getMethod();
 
-        $args = $this->controller->bindActionParams($this,$params);
-        if (Yii::$app->requestedParams === null) {
-            Yii::$app->requestedParams = $args;
-        }
+        $args = $this->controller->bindActionParams($this, $params);
 
         $contextParams = [];
         $context = $serviceInstaller->getActionContext();
@@ -51,9 +51,14 @@ class RestAction extends Action
         }
 
         $this->fireExeptionIfNotArgsCount($contextParams);
-        $args = array_merge($args, array_values($contextParams));
+        $args = array_merge($args, $contextParams);
 
         $verifier = $serviceInstaller->getVerifier();
+
+        $argValues = array_values($args);
+        if (Yii::$app->requestedParams === null) {
+            Yii::$app->requestedParams = $argValues;
+        }
 
         if ($verifier !== null) {
             $verifier->fireForbiddenHttpExceptionIfNotPermission([
@@ -67,7 +72,7 @@ class RestAction extends Action
         }
 
         try {
-            $result = call_user_func_array([$this->service, $method], $args);
+            $result = call_user_func_array([$this->service, $method], $argValues);
         } catch (NotFoundException $e) {
             $this->fireNotFoundHttpException($e->getMessage());
         } catch (DomainException $e) {

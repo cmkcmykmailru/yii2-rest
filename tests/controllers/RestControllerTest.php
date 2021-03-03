@@ -1,51 +1,118 @@
 <?php
 
+namespace resttests\controllers;
 
-namespace grigorTest\rest\controllers;
-
-
+use grigor\rest\controllers\action\RestAction;
 use grigor\rest\controllers\RestController;
-use PHPUnit\Framework\TestCase;
-use yii\helpers\ArrayHelper;
+use resttests\TestCase;
+use Yii;
+
 
 class RestControllerTest extends TestCase
 {
+    private $controller;
+
+    public function setUp(): void
+    {
+        $this->controller = $this->createController();
+    }
+
     public function testBindActionParams()
     {
-        new RestController('fake', new \yii\web\Application([
-            'id' => 'app',
-            'basePath' => __DIR__,
 
-            'components' => [
-                'request' => [
-                    'cookieValidationKey' => 'wefJDF8sfdsfSDefwqdxj9oq',
-                    'scriptFile' => __DIR__ . '/index.php',
-                    'scriptUrl' => '/index.php',
-                ],
-            ],
-        ]));
+        $serviceInstaller = $this->getMockSreviceInstiller([
+            'pattern' => '/v1/context/demo/<id:[\w\-]+>',
+            'verb' => ['GET'],
+            'alias' => 'method1/index',
+            'class' => 'grigor\rest\urls\ServiceRule',
+            'identityService' => '1',
+        ]);
+
+        $action = new RestAction(RestController::ROUTE, $this->controller, $serviceInstaller);
+
+        $params = ['id' => '1'];
+        $args = $this->controller->bindActionParams($action, $params);
+
+        self::assertArrayHasKey('id', $args);
+        self::assertEquals('1', $args['id']);
+        self::assertCount(1, $args);
+
+
+        $params = ['idd' => 'должен быть пустым'];
+        $args = $this->controller->bindActionParams($action, $params);
+
+        self::assertCount(0, $args);
+
+        $params = [];
+        $args = $this->controller->bindActionParams($action, $params);
+
+        self::assertCount(0, $args);
     }
-    protected function mockWebApplication($config = [], $appClass = '\yii\web\Application')
+
+    public function testBindActionParamsEmptyParamsOfMethod()
     {
-        new $appClass(ArrayHelper::merge([
-            'id' => 'testapp',
-            'basePath' => __DIR__,
-            'vendorPath' => $this->getVendorPath(),
-            'aliases' => [
-                '@bower' => '@vendor/bower-asset',
-                '@npm' => '@vendor/npm-asset',
-            ],
-            'components' => [
-                'request' => [
-                    'cookieValidationKey' => 'wefJDF8sfdsfSDefwqdxj9oq',
-                    'scriptFile' => __DIR__ . '/index.php',
-                    'scriptUrl' => '/index.php',
-                ],
-            ],
-        ], $config));
+
+        $serviceInstaller = $this->getMockSreviceInstiller([
+            'pattern' => '/v1/context/demo',
+            'verb' => ['GET'],
+            'alias' => 'method2/index',
+            'class' => 'grigor\rest\urls\ServiceRule',
+            'identityService' => '2',
+        ]);
+
+        $action = new RestAction(RestController::ROUTE, $this->controller, $serviceInstaller);
+
+        $params = ['id' => '1'];
+        $args = $this->controller->bindActionParams($action, $params);
+
+        self::assertCount(0, $args);
     }
-    protected function getVendorPath()
+
+    public function testBindActionParamsFormParams()
     {
-        return dirname(__DIR__) . '/vendor';
+
+        $serviceInstaller = $this->getMockSreviceInstiller([
+            'pattern' => '/v1/context/demo',
+            'verb' => ['GET'],
+            'alias' => 'method3/index',
+            'class' => 'grigor\rest\urls\ServiceRule',
+            'identityService' => '3',
+        ]);
+
+        $action = new RestAction(RestController::ROUTE, $this->controller, $serviceInstaller);
+
+        $params = ['id' => '1'];
+        $args = $this->controller->bindActionParams($action, $params);
+
+        self::assertCount(1, $args);
+        self::assertArrayHasKey('form', $args);
+        self::assertEquals(FakeForm::class, get_class($args['form']));
+
+        $params = [];
+        $args = $this->controller->bindActionParams($action, $params);
+
+        self::assertCount(1, $args);
+        self::assertArrayHasKey('form', $args);
+        self::assertEquals(FakeForm::class, get_class($args['form']));
     }
+
+    public function testBindActionIgnoreParams()
+    {
+
+        $serviceInstaller = $this->getMockSreviceInstiller([
+            'pattern' => '/v1/context/demo',
+            'verb' => ['GET'],
+            'alias' => 'method1/index',
+            'class' => 'grigor\rest\urls\ServiceRule',
+            'identityService' => '1',
+        ]);
+
+        $action = new RestAction(RestController::ROUTE, $this->controller, $serviceInstaller);
+
+        $params = ['id' => '1'];
+        $args = $this->controller->bindActionParams($action, $params);
+
+        self::assertCount(0, $args);
+    }
+
 }

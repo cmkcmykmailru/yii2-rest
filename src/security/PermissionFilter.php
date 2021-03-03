@@ -17,6 +17,6 @@ class PermissionFilter extends AbstractFilter
         if (!\Yii::$app->user->can($this->can, $data)) {
             return parent::can($data);
         }
-        return false;
+        return true;
     }
 }

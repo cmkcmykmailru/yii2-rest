@@ -7,5 +7,5 @@ use yii\web\Request;
 
 interface FormProcessorInterface
 {
-    public function load(Model $form, &$args, Request $request): void;
+    public function load(Model $form,string $name, &$args, Request $request): void;
 }
