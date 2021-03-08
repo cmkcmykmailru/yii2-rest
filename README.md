@@ -13,13 +13,13 @@ yii2-rest
 Запустите команду
 
 ```
-php composer.phar require --prefer-dist grigor/yii2-rest "dev-master"
+php composer require --prefer-dist grigor/yii2-rest "1.0.1"
 ```
 
 или добавьте в composer.json
 
 ```
-"grigor/yii2-rest": "dev-master",
+"grigor/yii2-rest": "^1.0.1",
 ```
 
 Настройка с учетом присутствия в системе yii2-generator
@@ -53,6 +53,17 @@ return [
 ];
 ```
 
+Файл console/config/main.php может быть таким:
+```php 
+...
+    'bootstrap' => ['log', grigor\generator\GeneratorBootstrap::class],
+    'modules' => [
+        'generator' => [
+            'class' => grigor\generator\Module::class,
+        ],
+    ],
+...
+```
 Файл api/config/main.php может быть таким:
 
 ```php
@@ -71,7 +82,6 @@ return [
     'bootstrap' => [
         'log',
         grigor\rest\RestBootstrap::class,
-        grigor\generator\GeneratorBootstrap::class,
         [
             'class' => 'yii\filters\ContentNegotiator',
             'formats' => [
@@ -83,9 +93,6 @@ return [
     'modules' => [
         'rest' => [
             'class' => grigor\rest\Module::class,
-        ],
-        'generator' => [
-            'class' => grigor\generator\Module::class,
         ],
     ],
     'controllerNamespace' => 'api\controllers',
