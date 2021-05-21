@@ -18,6 +18,7 @@ class ServiceInstaller extends BaseObject
     private $alias;
     private $actionContext;
     private $strictParams;
+    public $behaviors;
 
     public function installService(string $identityService): void
     {
@@ -41,7 +42,7 @@ class ServiceInstaller extends BaseObject
      */
     public function getStrictParams(): array
     {
-        return empty($this->strictParams)?[]:$this->strictParams;
+        return empty($this->strictParams) ? [] : $this->strictParams;
     }
 
     /**

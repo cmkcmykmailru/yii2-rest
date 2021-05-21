@@ -24,6 +24,16 @@ class RestController extends Controller
         return new RestAction($id, $this, \Yii::$app->serviceInstaller);
     }
 
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        if (!empty(\Yii::$app->serviceInstaller->behaviors)) {
+            $callback = \Yii::$app->serviceInstaller->behaviors;
+            return $callback($this, $behaviors);
+        }
+        return $behaviors;
+    }
+
     public function bindActionParams($action, $params)
     {
         $serviceInstaller = $action->serviceInstaller;
